@@ -31,9 +31,9 @@ class ScheduleManager:
     def _save_data(self):
         """Converts object lists back to dictionaries and saves to JSON."""
         data_to_save = {
-            "students": [s.to_dict() for s in self.students],
-            "teachers": [t.to_dict() for t in self.teachers],
-            "courses": [c.to_dict() for c in self.courses],
+            "students": [s.__dict__ for s in self.students],
+            "teachers": [t.__dict__ for t in self.teachers],
+            "courses": [c.__dict__ for c in self.courses],
             "attendance": self.attendance_log
         }
         dir_name = os.path.dirname(self.data_path)
@@ -41,15 +41,15 @@ class ScheduleManager:
             os.makedirs(dir_name, exist_ok=True)
 
         with open(self.data_path, 'w', encoding='utf-8') as f:
-            json.dump(data_to_save, f, indent=4)
+            json.dump(data_to_save, f, indent=4)    
 
     def find_student_by_id(self, student_id):
         """Helper method to find a student by ID."""
-        return next((s for s in self.students if s.user_id == student_id), None)
+        return next((s for s in self.students if str(s.id) == str(student_id)), None)
 
     def find_course_by_id(self, course_id):
         """Helper method to find a course by ID."""
-        return next((c for c in self.courses if c.course_id == course_id), None)
+        return next((c for c in self.courses if str(c.id) == str(course_id)), None)
 
     def check_in(self, student_id, course_id):
         """Records a student's attendance for a course after validation."""
