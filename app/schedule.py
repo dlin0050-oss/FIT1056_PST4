@@ -1,5 +1,6 @@
 import json
 import os
+import datetime
 from app.student import StudentUser
 from app.teacher import TeacherUser, Course
 
@@ -10,7 +11,7 @@ class ScheduleManager:
         self.students = []
         self.teachers = []
         self.courses = []
-        self.attendance_log = []
+        self.attendance_log = []    
         self._load_data()
 
     def _load_data(self):
@@ -43,7 +44,30 @@ class ScheduleManager:
             json.dump(data_to_save, f, indent=4)
 
     def find_student_by_id(self, student_id):
+        """Helper method to find a student by ID."""
         return next((s for s in self.students if s.user_id == student_id), None)
 
     def find_course_by_id(self, course_id):
+        """Helper method to find a course by ID."""
         return next((c for c in self.courses if c.course_id == course_id), None)
+
+    def check_in(self, student_id, course_id):
+        """Records a student's attendance for a course after validation."""
+        student = self.find_student_by_id(student_id)
+        course = self.find_course_by_id(course_id)
+        
+        if not student or not course:
+            print("Error: Check-in failed. Invalid Student or Course ID.")
+            return False
+            
+        timestamp = datetime.datetime.now().isoformat()
+        check_in_record = {
+            "student_id": student_id, 
+            "course_id": course_id, 
+            "timestamp": timestamp
+        }
+        
+        self.attendance_log.append(check_in_record)
+        self._save_data()
+        print(f"Success: Student {student.name} checked into {course.name}.")
+        return True
