@@ -1,0 +1,49 @@
+import json
+import os
+from app.student import StudentUser
+from app.teacher import TeacherUser, Course
+
+class ScheduleManager:
+    """The main controller for all business logic and data handling."""
+    def __init__(self, data_path="data/msms.json"):
+        self.data_path = data_path
+        self.students = []
+        self.teachers = []
+        self.courses = []
+        self.attendance_log = []
+        self._load_data()
+
+    def _load_data(self):
+        """Loads data from the JSON file and populates the object lists."""
+        try:
+            with open(self.data_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                
+                self.students = [StudentUser(**s) for s in data.get("students", [])]
+                self.teachers = [TeacherUser(**t) for t in data.get("teachers", [])]
+                self.courses = [Course(**c) for c in data.get("courses", [])]
+                
+                self.attendance_log = data.get("attendance", [])
+        except FileNotFoundError:
+            print("Data file not found. Starting with a clean state.")
+
+    def _save_data(self):
+        """Converts object lists back to dictionaries and saves to JSON."""
+        data_to_save = {
+            "students": [s.to_dict() for s in self.students],
+            "teachers": [t.to_dict() for t in self.teachers],
+            "courses": [c.to_dict() for c in self.courses],
+            "attendance": self.attendance_log
+        }
+        dir_name = os.path.dirname(self.data_path)
+        if dir_name:
+            os.makedirs(dir_name, exist_ok=True)
+
+        with open(self.data_path, 'w', encoding='utf-8') as f:
+            json.dump(data_to_save, f, indent=4)
+
+    def find_student_by_id(self, student_id):
+        return next((s for s in self.students if s.user_id == student_id), None)
+
+    def find_course_by_id(self, course_id):
+        return next((c for c in self.courses if c.course_id == course_id), None)
